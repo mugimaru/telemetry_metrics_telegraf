@@ -5,6 +5,7 @@ defmodule TelemetryMetricsTelegraf do
 
   use GenServer
   require Logger
+  alias TelemetryMetricsTelegraf.Utils
 
   @type adapter :: {module(), any}
   @type args :: [{:adapter, module() | adapter()}, {:metrics, [Telemetry.Metrics.t()]}]
@@ -107,7 +108,7 @@ defmodule TelemetryMetricsTelegraf do
 
   defp group_metrics_by_name!(metrics) do
     Enum.reduce(metrics, %{}, fn new_metric, acc ->
-      name = Enum.join(new_metric.name, ".")
+      name = Utils.measurement_name(new_metric)
       validate_group!(name, acc[name], new_metric)
 
       Map.put(acc, name, [new_metric | Map.get(acc, name, [])])

@@ -59,8 +59,8 @@ defmodule TelemetryMetricsTelegrafTest do
     TelemetryMetricsTelegraf.start_link(
       adapter: Mock.Adapter,
       metrics: [
-        summary("foobar_summary", measurement: :count, event_name: [:foo, :bar], tags: [:tag]),
-        summary("foobar_summary", measurement: :duration, event_name: [:foo, :bar], tags: [:tag])
+        summary("foobar.summary", measurement: :count, event_name: [:foo, :bar], tags: [:tag]),
+        summary("foobar.summary", measurement: :duration, event_name: [:foo, :bar], tags: [:tag])
       ]
     )
 
@@ -68,7 +68,7 @@ defmodule TelemetryMetricsTelegrafTest do
     measurements = %{count: 1, duration: 10}
 
     :telemetry.execute([:foo, :bar], measurements, tags)
-    assert_received {^ref, "foobar_summary", ^tags, ^measurements}
+    assert_received {^ref, "foobar.summary", ^tags, ^measurements}
   end
 
   test "detaches telemetry listeners on termination" do
