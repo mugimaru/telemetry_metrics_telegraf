@@ -1,6 +1,27 @@
 defmodule TelemetryMetricsTelegraf do
   @moduledoc """
-  Documentation for TelemetryMetricsTelegraf.
+  InfluxDB repoter for `Telemetry.Metrics`.
+
+  `TelemetryMetricsTelegraf`:
+  * uses all except last dot-separated segments of metric name as influxdb measurement name ("foo.bar.duration" -> "foo.bar")
+  * uses the last name segment or `:field_name` reporter option as field key ("foo.bar.duration" -> "duration")
+  * reports metrics with the same measurement name as a single influxdb measurement (with multiple fields)
+
+  For example, metrics definition
+      [
+        summary("app.repo.query.decode_time", tags: [:source])
+        summary("app.repo.query.total_time", tags: [:source])
+      ]
+
+  for event
+
+      :telemetry.execute([:app, :repo, :query], %{total_time: 100, decode_time: 30}, %{source: "users"})
+
+  yields
+
+        app.repo.query,source="users" total_time=100,decode_time=30
+
+  influxdb measurement.
   """
 
   use GenServer

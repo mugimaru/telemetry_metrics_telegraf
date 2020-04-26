@@ -3,7 +3,6 @@ defmodule TelemetryMetricsTelegrafTest do
   doctest TelemetryMetricsTelegraf
 
   import Telemetry.Metrics
-  import TelemetryMetricsTelegraf.MetricHelpers
   import Hammox
 
   setup :set_mox_from_context
@@ -31,14 +30,15 @@ defmodule TelemetryMetricsTelegrafTest do
       adapter: Mock.Adapter,
       metrics: [
         summary("foo.bar.count", tags: [:tag1]),
-        counter("foo.bar.duration", tags: [:tag2])
+        counter("foo.baz.duration", tags: [:tag2])
       ]
     )
 
-    :telemetry.execute([:foo, :bar], %{count: 1, duration: 10}, %{tag1: "t1", tag2: "t2"})
+    :telemetry.execute([:foo, :bar], %{count: 1}, %{tag1: "t1"})
+    :telemetry.execute([:foo, :baz], %{duration: 10}, %{tag2: "t2"})
 
-    assert_received {^ref, "foo.bar.count", %{tag1: "t1"}, %{count: 1}}
-    assert_received {^ref, "foo.bar.duration", %{tag2: "t2"}, %{duration: 10}}
+    assert_received {^ref, "foo.bar", %{tag1: "t1"}, %{count: 1}}
+    assert_received {^ref, "foo.baz", %{tag2: "t2"}, %{duration: 10}}
   end
 
   test "does not allow to configure metrics of different types with duplicate names" do
@@ -48,7 +48,7 @@ defmodule TelemetryMetricsTelegrafTest do
     ]
 
     assert_raise TelemetryMetricsTelegraf.ConfigurationError,
-                 ~r/foo\.bar\.count was previously defined with/,
+                 ~r/foo\.bar was previously defined with/,
                  fn ->
                    TelemetryMetricsTelegraf.init({metrics, {Mock.Adapter, []}})
                  end
@@ -60,8 +60,8 @@ defmodule TelemetryMetricsTelegrafTest do
     TelemetryMetricsTelegraf.start_link(
       adapter: Mock.Adapter,
       metrics: [
-        telegraf_summary("foo.bar", :count, tags: [:tag]),
-        telegraf_summary("foo.bar", :duration, tags: [:tag])
+        summary("foo.bar.count", tags: [:tag]),
+        summary("foo.bar.duration", tags: [:tag])
       ]
     )
 
@@ -70,6 +70,32 @@ defmodule TelemetryMetricsTelegrafTest do
 
     :telemetry.execute([:foo, :bar], measurements, tags)
     assert_received {^ref, "foo.bar", ^tags, ^measurements}
+  end
+
+  test "allows to configure multiple metrics for an event" do
+    ref = proxy_adapter_writes(2)
+
+    TelemetryMetricsTelegraf.start_link(
+      adapter: Mock.Adapter,
+      metrics: [
+        summary("foo.bar.count", tags: [:tag]),
+        distribution("foo.bar_histogram.duration",
+          event_name: [:foo, :bar],
+          buckets: [0.0, 50.0],
+          tags: [:tag]
+        )
+      ]
+    )
+
+    tags = %{tag: "tag_value"}
+    measurements = %{count: 1, duration: 10}
+
+    :telemetry.execute([:foo, :bar], measurements, tags)
+    assert_received {^ref, "foo.bar", ^tags, summary_measurements}
+    assert_received {^ref, "foo.bar_histogram", ^tags, distribution_measurements}
+
+    assert summary_measurements == Map.take(measurements, [:count])
+    assert distribution_measurements == Map.take(measurements, [:duration])
   end
 
   test "detaches telemetry listeners on termination" do
