@@ -1,0 +1,10 @@
+%{
+  "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], [], "hexpm"},
+  "credo": {:hex, :credo, "1.4.0", "92339d4cbadd1e88b5ee43d427b639b68a11071b6f73854e33638e30a0ea11f5", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
+  "hammox": {:hex, :hammox, "0.2.3", "9e0f0f9791f6e33f2ef8ad73f101b6354a78802ad452025478d371a69bfd62cd", [:mix], [{:mox, "~> 0.5", [hex: :mox, repo: "hexpm", optional: false]}, {:ordinal, "~> 0.1", [hex: :ordinal, repo: "hexpm", optional: false]}], "hexpm"},
+  "jason": {:hex, :jason, "1.2.0", "10043418c42d2493d0ee212d3fddd25d7ffe484380afad769a0a38795938e448", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
+  "mox": {:hex, :mox, "0.5.2", "55a0a5ba9ccc671518d068c8dddd20eeb436909ea79d1799e2209df7eaa98b6c", [:mix], [], "hexpm"},
+  "ordinal": {:hex, :ordinal, "0.1.0", "2f7a1a64ff4be44b8a674718bb00d1584188fe92fa2fa48b95b1e72096d74a34", [:mix], [], "hexpm"},
+  "telemetry": {:hex, :telemetry, "0.4.1", "ae2718484892448a24470e6aa341bc847c3277bfb8d4e9289f7474d752c09c7f", [:rebar3], [], "hexpm"},
+  "telemetry_metrics": {:hex, :telemetry_metrics, "0.4.2", "1de986fad9aa6bf81f8a33ddfd16e5d8ab0dec6272e624eb517c1a92a44d41a9", [:mix], [{:telemetry, "~> 0.4", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm"},
+}
