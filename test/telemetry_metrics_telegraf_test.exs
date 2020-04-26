@@ -3,6 +3,7 @@ defmodule TelemetryMetricsTelegrafTest do
   doctest TelemetryMetricsTelegraf
 
   import Telemetry.Metrics
+  import TelemetryMetricsTelegraf.MetricHelpers
   import Hammox
 
   setup :set_mox_from_context
@@ -59,8 +60,8 @@ defmodule TelemetryMetricsTelegrafTest do
     TelemetryMetricsTelegraf.start_link(
       adapter: Mock.Adapter,
       metrics: [
-        summary("foobar.summary", measurement: :count, event_name: [:foo, :bar], tags: [:tag]),
-        summary("foobar.summary", measurement: :duration, event_name: [:foo, :bar], tags: [:tag])
+        telegraf_summary("foo.bar", :count, tags: [:tag]),
+        telegraf_summary("foo.bar", :duration, tags: [:tag])
       ]
     )
 
@@ -68,7 +69,7 @@ defmodule TelemetryMetricsTelegrafTest do
     measurements = %{count: 1, duration: 10}
 
     :telemetry.execute([:foo, :bar], measurements, tags)
-    assert_received {^ref, "foobar.summary", ^tags, ^measurements}
+    assert_received {^ref, "foo.bar", ^tags, ^measurements}
   end
 
   test "detaches telemetry listeners on termination" do
