@@ -8,6 +8,8 @@ defmodule TelemetryMetricsTelegraf.MixProject do
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
+      aliases: aliases(),
+      preferred_cli_env: [check: :test],
       deps: deps()
     ]
   end
@@ -21,6 +23,17 @@ defmodule TelemetryMetricsTelegraf.MixProject do
 
   defp elixirc_paths(:test), do: ["test/support", "lib"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp aliases do
+    [
+      check: [
+        "compile --force --warnings-as-errors",
+        "format --check-formatted",
+        "test --trace",
+        "credo --strict"
+      ]
+    ]
+  end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
