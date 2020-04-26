@@ -41,8 +41,12 @@ defmodule TelemetryMetricsTelegraf do
     for {event, metrics} <- groups do
       id = {__MODULE__, event, self()}
 
-      # TODO: better metrics grouping (group by metric.name and aggregation period)
-      :telemetry.attach(id, event, &handle_event/4, {adapter, metrics})
+      :telemetry.attach(
+        id,
+        event,
+        &handle_event/4,
+        {adapter, group_metrics_by_name!(metrics)}
+      )
     end
 
     {:ok, Map.keys(groups)}
@@ -57,16 +61,16 @@ defmodule TelemetryMetricsTelegraf do
     :ok
   end
 
-  defp handle_event(event_name, measurements, metadata, {{adapter_mod, adapter_opts}, metrics}) do
-    {tags, fields} =
-      Enum.reduce(metrics, {%{}, %{}}, fn metric, {tags, fields} ->
-        {Map.merge(tags, extract_tags(metric, metadata)),
-         Map.put(fields, field_name(metric), extract_measurement(metric, measurements))}
-      end)
+  defp handle_event(_event_name, measurements, metadata, {{adapter_mod, adapter_opts}, metrics}) do
+    for {measurement, metrics} <- metrics do
+      {tags, fields} =
+        Enum.reduce(metrics, {%{}, %{}}, fn metric, {tags, fields} ->
+          {Map.merge(tags, extract_tags(metric, metadata)),
+           Map.put(fields, field_name(metric), extract_measurement(metric, measurements))}
+        end)
 
-    event_name
-    |> TelemetryMetricsTelegraf.Utils.measurement_name_from_event_name()
-    |> adapter_mod.write(tags, fields, adapter_opts)
+      adapter_mod.write(measurement, tags, fields, adapter_opts)
+    end
   rescue
     e ->
       Logger.error(fn ->
@@ -99,5 +103,38 @@ defmodule TelemetryMetricsTelegraf do
   defp extract_tags(metric, metadata) do
     tag_values = metric.tag_values.(metadata)
     Map.take(tag_values, metric.tags)
+  end
+
+  defp group_metrics_by_name!(metrics) do
+    Enum.reduce(metrics, %{}, fn new_metric, acc ->
+      name = Enum.join(new_metric.name, ".")
+      validate_group!(name, acc[name], new_metric)
+
+      Map.put(acc, name, [new_metric | Map.get(acc, name, [])])
+    end)
+  end
+
+  @named_group_uniqueness_keys [:buckets, :tags, :__struct__, :reporter_options]
+  defp validate_group!(_group_name, nil, _new_metric), do: :ok
+
+  defp validate_group!(group_name, metrics, new_metric) do
+    new_metric_params = Map.take(new_metric, @named_group_uniqueness_keys)
+
+    Enum.each(metrics, fn metric ->
+      metric_params = Map.take(metric, @named_group_uniqueness_keys)
+
+      if new_metric_params != metric_params do
+        raise(
+          TelemetryMetricsTelegraf.ConfigurationError,
+          """
+          Metrics with the same name must share #{inspect(@named_group_uniqueness_keys)} attributes. \
+          #{group_name} was previously defined with \
+          #{inspect(metric_params)} and #{inspect(new_metric_params)} breaks the contract.\
+          """
+        )
+      end
+    end)
+
+    :ok
   end
 end
