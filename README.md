@@ -7,6 +7,6 @@ The core idea of this implementation is to avoid any in-memory aggregation and l
 ## TODO
 * [x] implement client-agnostic reporter
 * [ ] provide an ability to generate telegraf aggregations config from telemetry metrics
-* [ ] configure CI
+* [x] configure CI
 * [ ] publish to hex.pm
 * [ ] publish docs
