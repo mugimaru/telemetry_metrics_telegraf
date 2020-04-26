@@ -23,3 +23,4 @@ erl_crash.dump
 telemetry_metrics_telegraf-*.tar
 
 /.elixir_ls
+/.vscode
