@@ -4,10 +4,5 @@ elixir:
 otp_release:
   - "22.0"
 
-matrix:
-  include:
-    - elixir: "1.10"
-      otp_release: "22.0"
-
 script:
   - make check
