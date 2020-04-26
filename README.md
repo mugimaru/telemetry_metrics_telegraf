@@ -1,21 +1,11 @@
 # TelemetryMetricsTelegraf
 
-**TODO: Add description**
+[InfluxDB](https://www.influxdata.com/) reporter for [Telemetry.Metrics](https://github.com/beam-telemetry/telemetry_metrics).
+The core idea of this implementation is to avoid any in-memory aggregation and let [telegraf](https://www.influxdata.com/time-series-platform/telegraf) do the heavy lifting.
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `telemetry_metrics_telegraf` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:telemetry_metrics_telegraf, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/telemetry_metrics_telegraf](https://hexdocs.pm/telemetry_metrics_telegraf).
-
+## TODO
+* [x] implement client-agnostic reporter
+* [ ] provide an ability to generate telegraf aggregations config from telemetry metrics
+* [ ] configure CI
+* [ ] publish to hex.pm
+* [ ] publish docs
