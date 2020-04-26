@@ -4,13 +4,16 @@ defmodule TelemetryMetricsTelegraf.MixProject do
   def project do
     [
       app: :telemetry_metrics_telegraf,
-      version: "0.1.0",
+      version: "0.1.0-rc.1",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
       preferred_cli_env: [check: :test],
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      docs: docs(),
+      package: package()
     ]
   end
 
@@ -34,9 +37,31 @@ defmodule TelemetryMetricsTelegraf.MixProject do
     ]
   end
 
+  defp docs do
+    [
+      main: "TelemetryMetricsTelegraf",
+      source_url: "https://github.com/mugimaru73/telemetry_metrics_telegraf",
+      nest_modules_by_prefix: [TelemetryMetricsTelegraf.Adapters]
+    ]
+  end
+
+  defp package do
+    [
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => "https://github.com/mugimaru73/telemetry_metrics_telegraf"}
+    ]
+  end
+
+  defp description do
+    """
+    Telemetry.Metrics telegraf reporter.
+    """
+  end
+
   defp deps do
     [
       {:telemetry_metrics, "~> 0.4"},
+      {:ex_doc, "~> 0.21", only: [:dev, :docs], runtime: false},
       {:hammox, "~> 0.2", only: [:test]},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false}
     ]

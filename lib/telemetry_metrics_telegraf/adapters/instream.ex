@@ -27,7 +27,8 @@ defmodule TelemetryMetricsTelegraf.Adapters.Instream do
         def init(_arg) do
           children = [
             {TelemetryMetricsTelegraf,
-            metrics: metrics(), adapter: {TelemetryMetricsTelegraf.Adapters.Instream, [connection: MyApp.MyConnection]}}
+            metrics: metrics(),
+            adapter: {TelemetryMetricsTelegraf.Adapters.Instream, [connection: MyApp.MyConnection]}}
           ]
 
           Supervisor.init(children, strategy: :one_for_one)

@@ -1,11 +1,12 @@
 defmodule TelemetryMetricsTelegraf do
   @moduledoc """
-  InfluxDB repoter for `Telemetry.Metrics`.
+  InfluxDB reporter for `Telemetry.Metrics`.
 
   `TelemetryMetricsTelegraf`:
   * uses all except last dot-separated segments of metric name as influxdb measurement name ("foo.bar.duration" -> "foo.bar")
   * uses the last name segment or `:field_name` reporter option as field key ("foo.bar.duration" -> "duration")
   * reports metrics with the same measurement name as a single influxdb measurement (with multiple fields)
+  * uses adapters to provide flexibility in influxdb client choice (see spec at `TelemetryMetricsTelegraf.Writer`)
 
   For example, metrics definition
       [

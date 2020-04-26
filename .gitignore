@@ -24,3 +24,4 @@ telemetry_metrics_telegraf-*.tar
 
 /.elixir_ls
 /.vscode
+/doc
