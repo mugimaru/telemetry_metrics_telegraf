@@ -27,37 +27,52 @@ defmodule TelemetryMetricsTelegraf do
 
   use GenServer
   require Logger
+
+  import TelemetryMetricsTelegraf.AppConfig, only: [app_config: 0]
   alias TelemetryMetricsTelegraf.Utils
+
+  defstruct [:adapter_mod, :adapter_opts, :options]
 
   @type adapter :: {module(), any}
   @type args :: [{:adapter, module() | adapter()}, {:metrics, [Telemetry.Metrics.t()]}]
+
+  @type config :: %__MODULE__{
+          adapter_mod: TelemetryMetricsTelegraf.Writer.t(),
+          adapter_opts: any,
+          options: keyword()
+        }
 
   @spec start_link(args()) :: {:error, any} | {:ok, pid}
   def start_link(opts) do
     server_opts = Keyword.take(opts, [:name])
 
-    adapter =
-      case opts[:adapter] do
-        nil ->
+    {{adapter_mod, adapter_opts}, opts} =
+      case Keyword.pop(opts, :adapter) do
+        {nil, _opts} ->
           raise ArgumentError, "the :adapter option is required by #{inspect(__MODULE__)}"
 
-        {mod, opts} ->
-          {mod, mod.init(opts)}
+        {{adapter_mod, adapter_opts}, opts} ->
+          {{adapter_mod, adapter_mod.init(adapter_opts)}, opts}
 
-        mod ->
-          {mod, mod.init([])}
+        {adapter_mod, opts} ->
+          {{adapter_mod, adapter_mod.init([])}, opts}
       end
 
-    metrics =
-      opts[:metrics] ||
-        raise ArgumentError, "the :metrics option is required by #{inspect(__MODULE__)}"
+    {metrics, opts} =
+      case Keyword.pop(opts, :metrics) do
+        {metrics, opts} when is_list(metrics) ->
+          {metrics, opts}
 
-    GenServer.start_link(__MODULE__, {metrics, adapter}, server_opts)
+        _ ->
+          raise(ArgumentError, "the :metrics option is required by #{inspect(__MODULE__)}")
+      end
+
+    GenServer.start_link(__MODULE__, {metrics, {adapter_mod, adapter_opts}, opts}, server_opts)
   end
 
   @impl GenServer
-  @spec init({[Telemetry.Metrics.t()], adapter()}) :: {:ok, [any]}
-  def init({metrics, adapter}) do
+  @spec init({[Telemetry.Metrics.t()], adapter(), keyword()}) :: {:ok, [any]}
+  def init({metrics, adapter, opts}) do
     Process.flag(:trap_exit, true)
     groups = Enum.group_by(metrics, & &1.event_name)
 
@@ -70,6 +85,13 @@ defmodule TelemetryMetricsTelegraf do
         &handle_event/4,
         {adapter, group_metrics_by_name!(metrics)}
       )
+    end
+
+    if Utils.fetch_option!(:log_telegraf_config_on_start, [opts, app_config()]) do
+      Logger.info(fn ->
+        "Suggested telegraf aggregator config for your metrics:\n" <>
+          TelemetryMetricsTelegraf.Telegraf.ConfigAdviser.render(metrics, opts)
+      end)
     end
 
     {:ok, Map.keys(groups)}
