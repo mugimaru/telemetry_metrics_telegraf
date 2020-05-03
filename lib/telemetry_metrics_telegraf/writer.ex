@@ -24,6 +24,7 @@ defmodule TelemetryMetricsTelegraf.Writer do
 
       TelemetryMetricsTelegraf.start_link(metrics: AppTelemetry.metrics(), adapter: {PutsAdapter, :stderr})
   """
+  @type t :: module()
   @type writer_opts :: any
 
   @callback init(writer_opts) :: writer_opts

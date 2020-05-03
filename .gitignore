@@ -25,3 +25,6 @@ telemetry_metrics_telegraf-*.tar
 /.elixir_ls
 /.vscode
 /doc
+
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

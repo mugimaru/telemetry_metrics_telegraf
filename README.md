@@ -22,12 +22,13 @@ See documentation at [hexdocs.pm](https://hexdocs.pm/telemetry_metrics_telegraf)
 
 ## Quickstart guide
 
-Consider we have a freshly generated phoenix app with [telemetry module](https://github.com/phoenixframework/phoenix/blob/master/installer/templates/phx_web/telemetry.ex) and we want to use [instream](https://github.com/mneudert/instream) as influxdb/telegraf client.
-
+Consider we have a freshly generated phoenix app with [telemetry module](https://github.com/phoenixframework/phoenix/blob/master/installer/templates/phx_web/telemetry.ex) and we want to use [instream](https://github.com/mneudert/instream) as our telegraf client.
 
 Add telemetry_metrics_telegraf to the app telemetry supervision tree
 ```elixir
 defmodule MyAppWeb.Telemetry do
+  import Telemetry.Metrics
+
   def init(_arg) do
     children = [
       {:telemetry_poller, measurements: periodic_measurements(), period: 10_000},
@@ -78,14 +79,20 @@ vm.memory total=100
 vm.total_run_queue_lengths total=42,cpu=40,io=2
 ```
 
-In order to aggregate emitted measurements we can add the following to our telegraf config
+On startup telegraf reporter will log something like:
 
-```toml
+```
+[info]  Suggested telegraf aggregator config for your metrics:
 [[aggregators.basicstats]]
 period = "30s"
 drop_original = true
-namepass = ["vm.*", "my_app.repo.query", "phoenix.endpoint.stop"]
+namepass = ["my_app.repo.query", "phoenix.endpoint.stop", "vm.memory", "vm.total_run_queue_lengths"]
 ```
 
-## TODO
-* [ ] provide an ability to generate telegraf aggregations config from telemetry metrics
+or you can render telegraf config manually by calling
+
+```elixir
+config_string = TelemetryConfigTelegraf.Telegraf.ConfigAdviser.render(MyAppWeb.Telemetry.metrics(), options_kw)
+```
+
+Copy/paste aggregators config into your telegraf configuration file and you're good to go.
