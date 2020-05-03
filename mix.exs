@@ -41,7 +41,10 @@ defmodule TelemetryMetricsTelegraf.MixProject do
     [
       main: "TelemetryMetricsTelegraf",
       source_url: "https://github.com/mugimaru73/telemetry_metrics_telegraf",
-      nest_modules_by_prefix: [TelemetryMetricsTelegraf.Adapters]
+      nest_modules_by_prefix: [
+        TelemetryMetricsTelegraf.Adapters,
+        TelemetryMetricsTelegraf.Telegraf
+      ]
     ]
   end
 

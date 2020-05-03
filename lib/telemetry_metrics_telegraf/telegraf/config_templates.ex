@@ -1,11 +1,20 @@
 defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
   @moduledoc "Telegraf toml configuration templates."
 
-  @spec basicstats_aggeregator({period :: String.t(), [String.t()]}, keyword) :: String.t()
-  def basicstats_aggeregator({period, measurements}, opts) do
+  @type opts :: keyword({:period, String.t()})
+  @type basicstats_opts :: keyword({:period, String.t()} | {:stats, [atom | String.t()]})
+  @type hisogram_opts ::
+          keyword(
+            {:period, String.t()}
+            | {:histogram_reset, boolean}
+            | {:histogram_cumulative, boolean()}
+          )
+
+  @spec basicstats_aggeregator(measurements :: [String.t()], basicstats_opts) :: String.t()
+  def basicstats_aggeregator(measurements, opts) do
     ~s"""
     [[aggregators.basicstats]]
-    period = "#{period}"
+    period = "#{opts[:period]}"
     drop_original = true#{basicstats_stats_list(opts[:stats])}
     namepass = #{render_namepass(measurements)}
     """
@@ -17,22 +26,15 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
     "\nstats = " <> toml_list_of_string(stats)
   end
 
-  @spec final_aggeregator({period :: String.t(), [String.t()]}, keyword) :: String.t()
-  def final_aggeregator({period, measurements}, _opts) do
+  @spec final_aggeregator([measurement :: String.t()], opts) :: String.t()
+  def final_aggeregator(measurements, opts) do
     ~s"""
     [[aggregators.final]]
-    period = "#{period}"
+    period = "#{opts[:period]}"
     drop_original = true
     namepass = #{render_namepass(measurements)}
     """
   end
-
-  @type hisogram_opts ::
-          keyword(
-            {:period, String.t()}
-            | {:histogram_reset, boolean}
-            | {:histogram_cumulative, boolean()}
-          )
 
   @spec histogram_aggregator(
           [{measurement_name :: String.t(), buckets :: [float]}],
@@ -41,10 +43,10 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
   def histogram_aggregator(measurements_with_buckets, opts) do
     ~s"""
     [[aggregators.histogram]]
-    period = "#{Keyword.fetch!(opts, :period)}"
+    period = "#{opts[:period]}"
     drop_original = true
-    reset = #{Keyword.fetch!(opts, :histogram_reset)}
-    cumulative = #{Keyword.fetch!(opts, :histogram_cumulative)}
+    reset = #{opts[:histogram_reset]}
+    cumulative = #{opts[:histogram_cumulative]}
     #{measurements_with_buckets |> Enum.map(&histogram_config/1) |> Enum.join("\n")}
     """
   end

@@ -1,6 +1,16 @@
 defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviser do
   @moduledoc """
   Generates telegraf aggregators config from `Telemetry.Metrics` definitions.
+
+  * `Telemetry.Metrics.Distribution` - [histogram](https://github.com/influxdata/telegraf/tree/master/plugins/aggregators/histogram).
+  * `Telemetry.Metrics.LastValue` - [final](https://github.com/influxdata/telegraf/tree/master/plugins/aggregators/final).
+  * `Telemetry.Metrics.Summary` - [basicstats](https://github.com/influxdata/telegraf/tree/master/plugins/aggregators/basicstats). A list of stats can be configured via `:summary_stats` option.
+  * `Telemetry.Metrics.Sum` - [basicstats](https://github.com/influxdata/telegraf/tree/master/plugins/aggregators/basicstats) with `stats = ["sum"]`.
+  * `Telemetry.Metrics.Counter` - [basicstats](https://github.com/influxdata/telegraf/tree/master/plugins/aggregators/basicstats) with `stats = ["count"]`.
+
+  ## Usage
+
+      TelemetryMetricsTelegraf.Telegraf.ConfigAdviser.render(MyAppWeb.Telemetry.metrics(), [])
   """
 
   alias TelemetryMetricsTelegraf.Telegraf.ConfigTemplates
@@ -11,6 +21,13 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviser do
     only: [fetch_option!: 2, fetch_options!: 2, measurement_name: 1]
 
   @spec render([Telemetry.Metrics.t()], keyword()) :: String.t()
+  @doc """
+  Renders telegraf aggregations config from `Telemetry.Metrics` definitions list.
+
+      TelemetryMetricsTelegraf.Telegraf.ConfigAdviser.render(MyAppWeb.Telemetry.metrics(), [])
+
+  See `TelemetryMetricsTelegraf.AppConfig` for a list of supported options.
+  """
   def render(metrics, opts) do
     metrics
     |> Enum.group_by(fn m -> m.__struct__ end)
@@ -20,7 +37,8 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviser do
 
   defp render_group(Telemetry.Metrics.Summary, metrics, opts) do
     for {period, measurements} <- group_measurements_by_period(metrics, opts) do
-      ConfigTemplates.basicstats_aggeregator({period, measurements},
+      ConfigTemplates.basicstats_aggeregator(measurements,
+        period: period,
         stats: fetch_option!(:summary_stats, [opts, app_config()])
       )
     end
@@ -28,19 +46,19 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviser do
 
   defp render_group(Telemetry.Metrics.Counter, metrics, opts) do
     for {period, measurements} <- group_measurements_by_period(metrics, opts) do
-      ConfigTemplates.basicstats_aggeregator({period, measurements}, stats: [:count])
+      ConfigTemplates.basicstats_aggeregator(measurements, period: period, stats: [:count])
     end
   end
 
   defp render_group(Telemetry.Metrics.Sum, metrics, opts) do
     for {period, measurements} <- group_measurements_by_period(metrics, opts) do
-      ConfigTemplates.basicstats_aggeregator({period, measurements}, stats: [:sum])
+      ConfigTemplates.basicstats_aggeregator(measurements, period: period, stats: [:sum])
     end
   end
 
   defp render_group(Telemetry.Metrics.LastValue, metrics, opts) do
     for {period, measurements} <- group_measurements_by_period(metrics, opts) do
-      ConfigTemplates.final_aggeregator({period, measurements}, [])
+      ConfigTemplates.final_aggeregator(measurements, period: period)
     end
   end
 
