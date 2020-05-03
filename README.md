@@ -13,7 +13,7 @@ The package can be installed by adding `telemetry_metrics_telegraf` to your list
 ```elixir
 def deps do
   [
-    {:telemetry_metrics_telegraf, "~> 0.1"}
+    {:telemetry_metrics_telegraf, "~> 0.2"}
   ]
 end
 ```
