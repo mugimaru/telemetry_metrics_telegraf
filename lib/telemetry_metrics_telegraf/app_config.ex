@@ -25,7 +25,6 @@ defmodule TelemetryMetricsTelegraf.AppConfig do
     @default_config[:log_telegraf_config_on_start]
   })
 
-
   See [telegraf aggregators repo](https://github.com/influxdata/telegraf/tree/master/plugins/aggregators) for more details.
 
   ## Example configuration
