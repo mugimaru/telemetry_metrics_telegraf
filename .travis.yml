@@ -4,5 +4,25 @@ elixir:
 otp_release:
   - "22.0"
 
-script:
-  - make check
+jobs:
+  include:
+    - stage: test
+      env:
+        - MIX_ENV=test
+      script: make check
+    - env:
+        - MIX_ENV=dialyzer
+      script: mix dialyzer
+
+stages:
+  - install.rebar
+  - install.hex
+  - install.deps
+  - test
+
+env:
+  - DIALYZER_PLT_FILE=priv/plts/dialyzer.plt
+
+cache:
+  directories:
+    - priv/plts

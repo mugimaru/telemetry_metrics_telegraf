@@ -13,7 +13,8 @@ defmodule TelemetryMetricsTelegraf.MixProject do
       deps: deps(),
       description: description(),
       docs: docs(),
-      package: package()
+      package: package(),
+      dialyzer: dialyzer()
     ]
   end
 
@@ -25,6 +26,16 @@ defmodule TelemetryMetricsTelegraf.MixProject do
 
   defp elixirc_paths(:test), do: ["test/support", "lib"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp dialyzer do
+    case System.get_env("DIALYZER_PLT_FILE") do
+      nil ->
+        []
+
+      file ->
+        [plt_file: {:no_warn, file}]
+    end
+  end
 
   defp aliases do
     [
@@ -65,6 +76,7 @@ defmodule TelemetryMetricsTelegraf.MixProject do
     [
       {:telemetry_metrics, "~> 0.4"},
       {:ex_doc, "~> 0.21", only: [:dev, :docs], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :dialyzer], runtime: false},
       {:hammox, "~> 0.2", only: [:test]},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:toml, "~> 0.6.1", only: [:dev, :test]}
