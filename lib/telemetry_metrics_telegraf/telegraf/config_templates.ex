@@ -3,19 +3,18 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
 
   @spec basicstats_aggeregator({period :: String.t(), [String.t()]}, keyword) :: String.t()
   def basicstats_aggeregator({period, measurements}, opts) do
-    stats =
-      if stats = opts[:stats] do
-        "\nstats = [" <> (stats |> Enum.map(&~s["#{&1}"]) |> Enum.join(", ")) <> "]"
-      else
-        ""
-      end
-
     ~s"""
     [[aggregators.basicstats]]
     period = "#{period}"
-    drop_original = true#{stats}
+    drop_original = true#{basicstats_stats_list(opts[:stats])}
     namepass = #{render_namepass(measurements)}
     """
+  end
+
+  defp basicstats_stats_list(nil), do: ""
+
+  defp basicstats_stats_list(stats) do
+    "\nstats = " <> toml_list_of_string(stats)
   end
 
   @spec final_aggeregator({period :: String.t(), [String.t()]}, keyword) :: String.t()
@@ -28,18 +27,24 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
     """
   end
 
+  @type hisogram_opts ::
+          keyword(
+            {:period, String.t()}
+            | {:histogram_reset, boolean}
+            | {:histogram_cumulative, boolean()}
+          )
+
   @spec histogram_aggregator(
-          period :: String.t(),
           [{measurement_name :: String.t(), buckets :: [float]}],
-          keyword
+          hisogram_opts
         ) :: String.t()
-  def histogram_aggregator(period, measurements_with_buckets, opts) do
+  def histogram_aggregator(measurements_with_buckets, opts) do
     ~s"""
     [[aggregators.histogram]]
-    period = "#{period}"
+    period = "#{Keyword.fetch!(opts, :period)}"
     drop_original = true
-    reset = #{Keyword.get(opts, :reset, true)}
-    cumulative = #{Keyword.get(opts, :cumulative, true)}
+    reset = #{Keyword.fetch!(opts, :histogram_reset)}
+    cumulative = #{Keyword.fetch!(opts, :histogram_cumulative)}
     #{measurements_with_buckets |> Enum.map(&histogram_config/1) |> Enum.join("\n")}
     """
   end
@@ -59,12 +64,19 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
   end
 
   defp render_namepass(measurements) do
-    items =
-      measurements
-      |> Enum.sort()
-      |> Enum.map(&~s[  "#{&1}"])
-      |> Enum.join(",\n")
+    measurements
+    |> Enum.sort()
+    |> toml_list_of_string()
+  end
 
-    "[\n" <> items <> "\n]"
+  @inline_toml_list_max_items_length 100
+  defp toml_list_of_string(list) do
+    items = Enum.map(list, &~s["#{&1}"])
+
+    if Enum.reduce(items, 0, &(&2 + String.length(&1))) > @inline_toml_list_max_items_length do
+      "[\n" <> Enum.join(items, ",\n") <> "\n]"
+    else
+      "[" <> Enum.join(items, ", ") <> "]"
+    end
   end
 end
