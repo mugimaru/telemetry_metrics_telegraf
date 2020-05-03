@@ -23,6 +23,32 @@ defmodule TelemetryMetricsTelegraf do
         app.repo.query,source="users" total_time=100,decode_time=30
 
   influxdb measurement.
+
+  ## Configuration options
+
+  Refer to `TelemetryMetricsTelegraf.AppConfig` for the complete list of available configuration options.
+
+  Options can be set:
+
+  * as metric repoter options
+  ```
+  summary("foo.value", reporter_options: [period: "1m"])
+  ```
+  * as reporter process options
+  ```
+  TelemetryMetricsTelegraf.star_link(
+    metrics: metrics(),
+    adapter: adapter(),
+    period: "45s"
+  )
+  ```
+  * as application config
+
+  ```
+  # config/config.exs
+  config :telemetry_metrics_telegraf, period: "50s"
+  ```
+
   """
 
   use GenServer
@@ -31,16 +57,13 @@ defmodule TelemetryMetricsTelegraf do
   import TelemetryMetricsTelegraf.AppConfig, only: [app_config: 0]
   alias TelemetryMetricsTelegraf.Utils
 
-  defstruct [:adapter_mod, :adapter_opts, :options]
-
-  @type adapter :: {module(), any}
-  @type args :: [{:adapter, module() | adapter()}, {:metrics, [Telemetry.Metrics.t()]}]
-
-  @type config :: %__MODULE__{
-          adapter_mod: TelemetryMetricsTelegraf.Writer.t(),
-          adapter_opts: any,
-          options: keyword()
-        }
+  @type adapter :: {TelemetryMetricsTelegraf.Writer.t(), any}
+  @type args ::
+          keyword(
+            {:adapter, TelemetryMetricsTelegraf.Writer.t() | adapter()}
+            | {:metrics, [Telemetry.Metrics.t()]}
+            | {atom, any}
+          )
 
   @spec start_link(args()) :: {:error, any} | {:ok, pid}
   def start_link(opts) do
