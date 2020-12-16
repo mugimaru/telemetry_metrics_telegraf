@@ -79,20 +79,57 @@ vm.memory total=100
 vm.total_run_queue_lengths total=42,cpu=40,io=2
 ```
 
-On startup telegraf reporter will log something like:
+After you describe the telemetry supervision, you should append the aggregators config to your telegraf config.
+You can render aggregators config by calling
+
+```elixir
+config_string = TelemetryConfigTelegraf.Telegraf.ConfigAdviser.render(MyAppWeb.Telemetry.metrics(), options_kw)
+```
+
+you will get something like this:
 
 ```
-[info]  Suggested telegraf aggregator config for your metrics:
 [[aggregators.basicstats]]
 period = "30s"
 drop_original = true
 namepass = ["my_app.repo.query", "phoenix.endpoint.stop", "vm.memory", "vm.total_run_queue_lengths"]
 ```
 
-or you can render telegraf config manually by calling
+Copy/paste received config into your telegraf configuration file.
+If your final file looks like this, you're good to go.
 
-```elixir
-config_string = TelemetryConfigTelegraf.Telegraf.ConfigAdviser.render(MyAppWeb.Telemetry.metrics(), options_kw)
 ```
+  [agent]
+  interval = "30s"
+  round_interval = true
+  metric_batch_size = 30000
+  metric_buffer_limit = 1000000
+  collection_jitter = "0s"
+  flush_interval = "5s"
+  flush_jitter = "2s"
+  precision = ""
+  debug = true
+  quiet = false
+  logfile = "${TELEGRAF_LOGFILE}"
+  hostname = ""
+  omit_hostname = true
 
-Copy/paste aggregators config into your telegraf configuration file and you're good to go.
+  [[inputs.socket_listener]]
+  service_address = "udp://:${TELEGRAF_UDP_PORT}"
+  data_format = "influx"
+
+  [[outputs.influxdb]]
+  urls = ["${TELEGRAF_INFLUXDB_URL}"]
+  database = "${TELEGRAF_INFLUXDB_DATABASE}"
+  retention_policy = "${TELEGRAF_INFLUXDB_RP}"
+  write_consistency = "any"
+  timeout = "5s"
+  username = "${TELEGRAF_INFLUXDB_USERNAME}"
+  password = "${TELEGRAF_INFLUXDB_PASSWORD}"
+  skip_database_creation = true
+
+  [[aggregators.basicstats]]
+  period = "30s"
+  drop_original = true
+  namepass = ["my_app.repo.query", "phoenix.endpoint.stop", "vm.memory", "vm.total_run_queue_lengths"]
+```
