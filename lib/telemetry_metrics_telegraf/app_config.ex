@@ -3,8 +3,7 @@ defmodule TelemetryMetricsTelegraf.AppConfig do
     period: "30s",
     histogram_reset: true,
     histogram_cumulative: true,
-    summary_stats: nil,
-    log_telegraf_config_on_start: true
+    summary_stats: nil
   ]
 
   @moduledoc ~s"""
@@ -20,9 +19,6 @@ defmodule TelemetryMetricsTelegraf.AppConfig do
   })
   * `:summary_stats` - stats list for summary metric (basicstats aggregator). In context of this option `nil` means "all stats" (default: #{
     inspect(@default_config[:summary_stats])
-  })
-  * `:log_telegraf_config_on_start` - if the option is set to true `TelemetryMetricsTelegraf` logs telegraf aggregators config on start (default: #{
-    @default_config[:log_telegraf_config_on_start]
   })
 
   See [telegraf aggregators repo](https://github.com/influxdata/telegraf/tree/master/plugins/aggregators) for more details.

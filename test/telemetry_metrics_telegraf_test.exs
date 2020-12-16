@@ -5,8 +5,6 @@ defmodule TelemetryMetricsTelegrafTest do
   import Telemetry.Metrics
   import Hammox
 
-  import ExUnit.CaptureLog
-
   setup :set_mox_from_context
   setup :verify_on_exit!
 
@@ -111,34 +109,5 @@ defmodule TelemetryMetricsTelegrafTest do
     assert [%{id: {TelemetryMetricsTelegraf, _, ^pid}}] = :telemetry.list_handlers([:foo, :bar])
     GenServer.stop(pid)
     assert [] = :telemetry.list_handlers([:foo, :bar])
-  end
-
-  test "logs suggested telegraf config" do
-    expect(Mock.Adapter, :init, & &1)
-
-    start_reporter_fun = fn ->
-      TelemetryMetricsTelegraf.start_link(
-        adapter: Mock.Adapter,
-        log_telegraf_config_on_start: true,
-        metrics: [
-          summary("foo.bar.count", tags: [:tag]),
-          summary("foo.bar.duration", tags: [:tag]),
-          last_value("foo.baz.value", reporter_options: [period: "1m"])
-        ]
-      )
-    end
-
-    assert capture_log(start_reporter_fun) =~ """
-           Suggested telegraf aggregator config for your metrics:
-           [[aggregators.final]]
-           period = "1m"
-           drop_original = true
-           namepass = ["foo.baz"]
-
-           [[aggregators.basicstats]]
-           period = "30s"
-           drop_original = true
-           namepass = ["foo.bar"]
-           """
   end
 end

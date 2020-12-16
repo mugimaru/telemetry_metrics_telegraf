@@ -54,7 +54,6 @@ defmodule TelemetryMetricsTelegraf do
   use GenServer
   require Logger
 
-  import TelemetryMetricsTelegraf.AppConfig, only: [app_config: 0]
   alias TelemetryMetricsTelegraf.Utils
 
   @type adapter :: {TelemetryMetricsTelegraf.Writer.t(), any}
@@ -95,7 +94,7 @@ defmodule TelemetryMetricsTelegraf do
 
   @impl GenServer
   @spec init({[Telemetry.Metrics.t()], adapter(), keyword()}) :: {:ok, [any]}
-  def init({metrics, adapter, opts}) do
+  def init({metrics, adapter, _opts}) do
     Process.flag(:trap_exit, true)
     groups = Enum.group_by(metrics, & &1.event_name)
 
@@ -108,13 +107,6 @@ defmodule TelemetryMetricsTelegraf do
         &handle_event/4,
         {adapter, group_metrics_by_name!(metrics)}
       )
-    end
-
-    if Utils.fetch_option!(:log_telegraf_config_on_start, [opts, app_config()]) do
-      Logger.info(fn ->
-        "Suggested telegraf aggregator config for your metrics:\n" <>
-          TelemetryMetricsTelegraf.Telegraf.ConfigAdviser.render(metrics, opts)
-      end)
     end
 
     {:ok, Map.keys(groups)}
