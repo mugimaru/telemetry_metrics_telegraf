@@ -105,7 +105,7 @@ defmodule TelemetryMetricsTelegraf do
       :telemetry.attach(
         id,
         event,
-        &handle_event/4,
+        &__MODULE__.handle_event/4,
         {adapter, group_metrics_by_name!(metrics)}
       )
     end
@@ -129,7 +129,7 @@ defmodule TelemetryMetricsTelegraf do
     :ok
   end
 
-  defp handle_event(_event_name, measurements, metadata, {{adapter_mod, adapter_opts}, metrics}) do
+  def handle_event(_event_name, measurements, metadata, {{adapter_mod, adapter_opts}, metrics}) do
     for {measurement, metrics} <- metrics do
       {tags, fields} =
         Enum.reduce(metrics, {%{}, %{}}, fn metric, {tags, fields} ->
