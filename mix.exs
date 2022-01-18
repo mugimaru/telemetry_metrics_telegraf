@@ -74,7 +74,7 @@ defmodule TelemetryMetricsTelegraf.MixProject do
 
   defp deps do
     [
-      {:telemetry_metrics, "~> 0.4"},
+      {:telemetry_metrics, "~> 0.4 or ~> 1.0"},
       {:ex_doc, "~> 0.21", only: [:dev, :docs], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :dialyzer], runtime: false},
       {:hammox, "~> 0.2", only: [:test]},

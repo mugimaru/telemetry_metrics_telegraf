@@ -142,7 +142,7 @@ defmodule TelemetryMetricsTelegraf do
   rescue
     e ->
       Logger.error(fn ->
-        "#{inspect(e)} #{Enum.map(__STACKTRACE__, &inspect/1) |> Enum.join(" ")}"
+        "#{inspect(e)} #{Enum.map_join(__STACKTRACE__, " ", &inspect/1)}"
       end)
 
       {:error, e}

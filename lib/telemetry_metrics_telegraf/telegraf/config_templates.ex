@@ -47,7 +47,7 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
     drop_original = true
     reset = #{opts[:histogram_reset]}
     cumulative = #{opts[:histogram_cumulative]}
-    #{measurements_with_buckets |> Enum.map(&histogram_config/1) |> Enum.join("\n")}
+    #{measurements_with_buckets |> Enum.map_join("\n", &histogram_config/1)}
     """
   end
 
@@ -55,7 +55,7 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigTemplates do
   def histogram_config({measurement_name, buckets}) do
     ~s"""
       [[aggregators.histogram.config]]
-        buckets = #{"[" <> (buckets |> Enum.map(&to_string/1) |> Enum.join(", ")) <> "]"}
+        buckets = #{"[" <> (buckets |> Enum.map_join(", ", &to_string/1)) <> "]"}
         measurement_name = "#{measurement_name}"
     """
   end

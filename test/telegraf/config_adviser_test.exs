@@ -10,7 +10,7 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviserTest do
       counter("b.value"),
       last_value("c.value"),
       sum("d.value"),
-      distribution("e.value", buckets: [0.0, 10.0, 25.0])
+      distribution("e.value", reporter_options: [buckets: [0.0, 10.0, 25.0]])
     ]
 
     assert %{
@@ -97,12 +97,10 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviserTest do
   test "allows to set histogram options" do
     metrics = [
       distribution("a.value",
-        buckets: [0.0, 10.0],
-        reporter_options: [histogram_reset: true]
+        reporter_options: [buckets: [0.0, 10.0], histogram_reset: true]
       ),
       distribution("b.value",
-        buckets: [0.0, 10.0],
-        reporter_options: [period: "1m", histogram_cumulative: true]
+        reporter_options: [buckets: [0.0, 10.0], period: "1m", histogram_cumulative: true]
       )
     ]
 
