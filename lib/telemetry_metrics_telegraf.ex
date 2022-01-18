@@ -30,13 +30,13 @@ defmodule TelemetryMetricsTelegraf do
 
   Options can be set:
 
-  * as metric repoter options
+  * as metric reporter options
   ```
   summary("foo.value", reporter_options: [period: "1m"])
   ```
   * as reporter process options
   ```
-  TelemetryMetricsTelegraf.star_link(
+  TelemetryMetricsTelegraf.start_link(
     metrics: metrics(),
     adapter: adapter(),
     period: "45s"
