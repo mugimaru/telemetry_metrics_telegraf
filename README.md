@@ -1,5 +1,6 @@
 # TelemetryMetricsTelegraf
-[![Build Status](https://travis-ci.com/mugimaru73/telemetry_metrics_telegraf.svg?token=XqLiJkbfAM2pqzZCdHyr&branch=master)](https://travis-ci.com/mugimaru73/telemetry_metrics_telegraf)
+
+![actions](https://github.com/mugimaru/telemetry_metrics_telegraf/actions/workflows/ci.yml/badge.svg)
 [![Hex](https://img.shields.io/hexpm/v/telemetry_metrics_telegraf.svg)](https://hex.pm/packages/telemetry_metrics_telegraf)
 [![Hexdocs](https://img.shields.io/badge/hex-docs-blue.svg?style=flat)](https://hexdocs.pm/telemetry_metrics_telegraf)
 
@@ -25,6 +26,7 @@ See documentation at [hexdocs.pm](https://hexdocs.pm/telemetry_metrics_telegraf)
 Consider we have a freshly generated phoenix app with [telemetry module](https://github.com/phoenixframework/phoenix/blob/master/installer/templates/phx_web/telemetry.ex) and we want to use [instream](https://github.com/mneudert/instream) as our telegraf client.
 
 Add telemetry_metrics_telegraf to the app telemetry supervision tree
+
 ```elixir
 defmodule MyAppWeb.Telemetry do
   import Telemetry.Metrics

@@ -71,7 +71,7 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviser do
       histogram_opts = fetch_options!(options_keys, [repoter_opts, global_opts, app_config()])
 
       metrics
-      |> Enum.map(&{measurement_name(&1), &1.buckets})
+      |> Enum.map(&{measurement_name(&1), distribution_metric_buckets(&1)})
       |> Enum.uniq()
       |> ConfigTemplates.histogram_aggregator(histogram_opts)
     end)
@@ -89,5 +89,9 @@ defmodule TelemetryMetricsTelegraf.Telegraf.ConfigAdviser do
 
       {period, measurements}
     end)
+  end
+
+  defp distribution_metric_buckets(%Telemetry.Metrics.Distribution{} = metric) do
+    Map.get_lazy(metric, :buckets, fn -> Keyword.get(metric.reporter_options, :buckets, []) end)
   end
 end
