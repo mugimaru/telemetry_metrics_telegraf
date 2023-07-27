@@ -4,7 +4,7 @@ defmodule TelemetryMetricsTelegraf.MixProject do
   def project do
     [
       app: :telemetry_metrics_telegraf,
-      version: "0.3.0",
+      version: "0.4.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
